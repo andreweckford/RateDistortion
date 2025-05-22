@@ -6,7 +6,41 @@ import numpy.linalg as lg
 import warnings
 from scipy.linalg import null_space,pinv,inv
 from scipy.optimize import newton
-from ProgressBar import ProgressBar
+import time
+from IPython.display import display,HTML
+        
+class ProgressBar:
+        
+    def __init__(self,maxCount=40,barWidth=40):
+        self.remainChar = '.'
+        self.barWidth = barWidth # width of the bar to print
+        self.doneChar = '='
+        self.out = display("",display_id=True)
+        self.reset(maxCount)
+        
+    def reset(self,maxCount=None):
+        if maxCount is not None:
+            self.maxCount = maxCount # maximum number of iterations
+        self.t = time.time() # initialization time
+        self.count = 0
+        self.out.update(HTML('<tt>|'+self.remainChar * self.barWidth+'|</tt>'))
+        
+    def iterate(self):
+        self.count += 1
+        if self.count <= self.maxCount:
+            bbb = int(self.barWidth * self.count / self.maxCount)
+            lll = self.barWidth - bbb
+            ir = ' ir: '+str(self.maxCount - self.count) # iterations remaining
+        else:
+            ir = ' ir: ?? '
+            bbb = self.barWidth
+            lll = 0
+        spi_val = (time.time()-self.t)/self.count
+        spi = f' spi: {spi_val:.1f}' # seconds per iteration
+        self.out.update(HTML('<tt>|' + self.doneChar * bbb + self.remainChar * lll + '|' + ir + spi + '</tt>'))
+        
+    def hide(self):
+        self.out.update(HTML(''))
 
 
 # # Overview
@@ -250,43 +284,3 @@ def getRD_BA(px,dxy,smin=-10,smax=0,q0=None,num_iter=1000000,ba_tol=1e-8,numPoin
 
     return r
 
-# gets the equivalent strategy matrix t from the reward matrix R and the actual strategy s
-# R is a (number of phenotypes) x (number of outcomes) matrix
-# s is a (cardinality of side information) x (number of phenotypes) matrix
-# Dxy = s @ R gives the growth rate (actual, not log), where D[i,j] = reward for side info i and outcome j
-# note: this is the same order as given at the top (but CHECK TO MAKE SURE!!)
-def getT(R,s):
-    (rows,cols) = np.shape(R)
-    q = pinv(R) @ np.ones(rows)
-    Qinv = np.diag(q)
-    B = R @ Qinv
-    return s @ B
-
-
-def getDistortionFunction(R,s):
-    return -1*np.log(getT(R,s))
-
-# returns the xth diagonal element of Q
-def getLambdaStarX(R,x=None):
-    (rows,cols) = np.shape(R)
-    if rows == cols:
-        q = inv(R) @ np.ones(rows)
-    else:
-        q = pinv(R) @ np.ones(rows)
-    Qinv = np.diag(q)
-    Q = lg.inv(Qinv)
-    if x is None:
-        return np.log(np.diag(Q))
-    return np.log(Q[x,x])
-    #Qinv = np.diag((np.linalg.inv(R) @ (np.array([np.ones(cols)]).T))[:,0])
-    #Q = np.linalg.inv(Qinv)
-    #if x is None:
-    #  return np.log(np.diag(Q))
-    #return np.log(Q[x,x])
-
-def getFullDistortionFunction(R,s):
-    (rows,cols) = np.shape(R)
-    Dxy = getDistortionFunction(R,s)
-    for i in range(cols):
-        Dxy[:,i] -= getLambdaStarX(R,i)
-    return Dxy
