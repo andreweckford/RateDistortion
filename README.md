@@ -1,6 +1,6 @@
 # Module to find the Rate-Distoriton Function
 
-This package contains the module ``RateDistortion``, which provides functions that calculate the rate-distortion function $R(D)$ for lossy compression of sources. The package requires ``scipy`` (developed with v1.7.3), ``numpy`` (developed with v1.21.5), and the provided ``ProgressBar`` module.
+This package contains the module ``RateDistortion``, which provides functions that calculate the rate-distortion function $R(D)$ for lossy compression of sources. The package requires ``scipy`` (developed with v1.7.3), ``numpy`` (developed with v1.21.5).
 
 Two rate-distortion calculations are provided, with function names given as follows (see references below):
 * ``getRD`` - uses the Hayashi method to calculate $R(D)$
